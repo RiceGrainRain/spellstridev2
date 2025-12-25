@@ -11,5 +11,10 @@ config_version=5
 [application]
 
 config/name="Spellstride"
+run/main_scene="uid://catyvf7jdfa61"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
