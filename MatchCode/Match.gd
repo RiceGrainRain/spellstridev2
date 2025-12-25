@@ -56,6 +56,10 @@ func _ready() -> void:
 	turn_manager.start_match(units_node)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if Input.is_action_just_pressed("end_turn"):
+			turn_manager.end_turn()
+			return
 	if not turn_manager.can_accept_input():
 		return
 
