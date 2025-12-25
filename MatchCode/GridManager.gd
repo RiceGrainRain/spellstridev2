@@ -68,10 +68,9 @@ func world_to_cell(world_pos: Vector2) -> Vector2i:
 	return ground_layer.local_to_map(ground_layer.to_local(world_pos))
 
 func cell_to_world_center(cell: Vector2i) -> Vector2:
-	var local := ground_layer.map_to_local(cell)
-	var tile_size: Vector2i = ground_layer.tile_set.tile_size
-	local += Vector2(tile_size) * 0.5
-	return ground_layer.to_global(local)
+	var center_local: Vector2 = ground_layer.map_to_local(cell)
+	return ground_layer.to_global(center_local)
+
 	
 func manhattan_distance(a: Vector2i, b: Vector2i) -> int:
 	return abs(a.x - b.x) + abs(a.y - b.y)

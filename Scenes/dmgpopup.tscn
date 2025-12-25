@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3 uid="uid://dw6m818in0gce"]
+
+[ext_resource type="FontFile" uid="uid://35h8usbk33et" path="res://assets/fonts/dungeonmode/font/dungeon-mode.ttf" id="2_wdly0"]
+
+[sub_resource type="GDScript" id="GDScript_c6o3p"]
+script/source = "extends Control
+class_name DamagePopup
+
+@onready var tier_label: Label = $TierLabel
+@onready var dmg_label: Label = $DmgLabel
+
+@export var float_distance: float = 30.0
+@export var duration: float = 1.2
+
+var time_left: float = 0.0
+var offset: Vector2 = Vector2.ZERO
+
+func setup(tier_text: String, dmg_value: int, show_tier: bool, show_damage: bool) -> void:
+	tier_label.visible = show_tier
+	dmg_label.visible = show_damage
+
+	tier_label.text = tier_text
+	if dmg_value <= 0:
+		dmg_label.text = \"0\"
+	else:
+		dmg_label.text = \"-\" + str(dmg_value)
+
+	time_left = duration
+	offset = Vector2.ZERO
+	modulate.a = 1.0
+
+# ✅ IMPORTANT: returns bool (true = keep, false = finished)
+func tick(delta: float) -> bool:
+	time_left -= delta
+	if time_left <= 0.0:
+		return false
+
+	var t: float = 1.0 - (time_left / duration)
+	t = clamp(t, 0.0, 1.0)
+
+	offset = Vector2(0.0, -float_distance * t)
+	modulate.a = 1.0 - t
+	return true
+"
+
+[node name="DamagePopup" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = SubResource("GDScript_c6o3p")
+
+[node name="TierLabel" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_fonts/font = ExtResource("2_wdly0")
+theme_override_font_sizes/font_size = 16
+
+[node name="DmgLabel" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_fonts/font = ExtResource("2_wdly0")
+theme_override_font_sizes/font_size = 16

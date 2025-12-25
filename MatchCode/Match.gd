@@ -1,14 +1,25 @@
+# Match.gd (only change needed is: no change required for the lambda warning fix)
+# But here is the full current Match.gd as previously provided, unchanged except it will now work
+# because ActionResolver awaits Unit.move_finished signal.
+
 extends Node2D
 
 @onready var grid: GridManager = $Controllers/GridManager
-@onready var overlay: GridOverlay = $GridOverlay
+@onready var overlay: GridOverlay = $Level/GridOverlay
 @onready var units_node: Node2D = $Units
+
+@onready var turn_manager: TurnManager = $Controllers/TurnManager
+@onready var action_resolver: ActionResolver = $Controllers/ActionResolver
 
 var selected_unit: Unit = null
 var occupied: Dictionary = {} # Vector2i -> Unit
+
 var input_locked: bool = false
 
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
 func _ready() -> void:
+	rng.randomize()
 	overlay.set_grid(grid)
 	occupied.clear()
 
@@ -19,46 +30,77 @@ func _ready() -> void:
 			u.set_cell(c, grid)
 			u.reset_ap()
 			occupied[c] = u
-			print("INIT unit:", u.name, " cell=", u.cell, " ap=", u.ap)
+			print("INIT unit:", u.name, " team=", u.team_id, " cell=", u.cell, " hp=", u.hp, " ap=", u.ap)
+
+	turn_manager.input_locked_changed.connect(func(locked: bool) -> void:
+		input_locked = locked
+	)
+
+	turn_manager.team_turn_started.connect(func(team_id: int) -> void:
+		print("TURN START: team", team_id)
+		if selected_unit != null and selected_unit.team_id != team_id:
+			clear_selection()
+	)
+
+	turn_manager.team_turn_ended.connect(func(team_id: int) -> void:
+		print("TURN END: team", team_id)
+	)
+
+	turn_manager.match_won.connect(func(winning_team_id: int) -> void:
+		print("MATCH OVER: team", winning_team_id, "wins!")
+		clear_selection()
+		overlay.clear()
+	)
+
+	action_resolver.setup(turn_manager, grid, units_node, occupied, rng)
+	turn_manager.start_match(units_node)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if input_locked:
+	if not turn_manager.can_accept_input():
 		return
 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var mouse_world: Vector2 = get_global_mouse_position()
 		var clicked_cell: Vector2i = grid.world_to_cell(mouse_world)
 
-		# 1) Select unit by forgiving hit test
-		var hit_unit := _get_unit_hit(mouse_world)
-		if hit_unit != null:
-			select_unit(hit_unit)
+		var clicked_unit := _get_unit_hit(mouse_world)
+		if clicked_unit != null:
+			if selected_unit != null and clicked_unit != selected_unit and clicked_unit.team_id != selected_unit.team_id:
+				await try_attack_selected(clicked_unit)
+				return
+
+			if clicked_unit.team_id != turn_manager.active_team_id:
+				clear_selection()
+				return
+
+			select_unit(clicked_unit)
 			return
 
-		# 2) Move selected unit if click is on a reachable tile
 		if selected_unit != null:
-			try_move_selected(clicked_cell)
+			await try_move_selected(clicked_cell)
 			return
 
 		clear_selection()
 
 func _get_unit_hit(world_pos: Vector2) -> Unit:
-	# Clicking is "finicky" if we only compare cell coords.
-	# This checks if your click is within the unit's tile rect (with padding).
 	var tile_size: Vector2 = Vector2(grid.ground_layer.tile_set.tile_size)
-
 	for child in units_node.get_children():
 		if child is Unit:
 			var u := child as Unit
+			if not u.is_alive():
+				continue
 			var center := grid.cell_to_world_center(u.cell)
-			var rect := Rect2(center - tile_size * 0.5, tile_size)
-			rect = rect.grow(4.0) # forgiving padding
+			var rect := Rect2(center - tile_size * 0.5, tile_size).grow(4.0)
 			if rect.has_point(world_pos):
 				return u
-
 	return null
 
 func select_unit(u: Unit) -> void:
+	if u == null or not u.is_alive():
+		return
+	if u.team_id != turn_manager.active_team_id:
+		return
+
 	if selected_unit != null:
 		_set_unit_selected(selected_unit, false)
 
@@ -82,36 +124,38 @@ func _update_overlay_for_selected() -> void:
 		overlay.clear()
 		return
 
+	if selected_unit.team_id != turn_manager.active_team_id:
+		clear_selection()
+		return
+
 	var reachable: Array[Vector2i] = grid.get_reachable_cells(selected_unit.cell, selected_unit.ap)
+	reachable.append(selected_unit.cell)
 	overlay.set_tiles(reachable)
 
 func try_move_selected(target_cell: Vector2i) -> void:
-	if not grid.is_walkable(target_cell):
+	if selected_unit == null:
 		return
-	if occupied.has(target_cell):
+	if selected_unit.team_id != turn_manager.active_team_id:
 		return
-
-	var reachable: Array[Vector2i] = grid.get_reachable_cells(selected_unit.cell, selected_unit.ap)
-	if not reachable.has(target_cell):
+	if selected_unit.ap <= 0:
 		return
 
-	var cost: int = grid.manhattan_distance(selected_unit.cell, target_cell)
-	if cost <= 0:
-		return
-	if cost > selected_unit.ap:
-		return
-
-	execute_move(selected_unit, target_cell, cost)
-
-func execute_move(u: Unit, target_cell: Vector2i, cost: int) -> void:
-	input_locked = true
-
-	# Update occupancy immediately (logic)
-	occupied.erase(u.cell)
-	u.ap -= cost
-	occupied[target_cell] = u
-
-	u.move_to_cell(target_cell, grid, func():
-		input_locked = false
+	var ok := await action_resolver.do_move(selected_unit, target_cell)
+	if ok:
 		_update_overlay_for_selected()
-	)
+
+func try_attack_selected(target: Unit) -> void:
+	if selected_unit == null:
+		return
+	if not selected_unit.is_alive() or target == null or not target.is_alive():
+		return
+	if selected_unit.team_id != turn_manager.active_team_id:
+		return
+
+	var ok := await action_resolver.do_attack(selected_unit, target)
+
+	if selected_unit != null and not selected_unit.is_alive():
+		clear_selection()
+
+	if ok:
+		_update_overlay_for_selected()
