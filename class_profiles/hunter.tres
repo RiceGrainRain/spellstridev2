@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AnimationProfile" load_steps=2 format=3 uid="uid://bi36c62kvu54g"]
+
+[ext_resource type="Script" uid="uid://dxa0up3rahmcs" path="res://MatchCode/AnimProfile.gd" id="1_qxvo8"]
+
+[resource]
+script = ExtResource("1_qxvo8")
+metadata/_custom_type_script = "uid://dxa0up3rahmcs"

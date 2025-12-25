@@ -1,4 +1,3 @@
-# ActionResolver.gd
 extends Node
 class_name ActionResolver
 
@@ -75,7 +74,6 @@ func do_move(unit: Unit, target_cell: Vector2i) -> bool:
 	unit.ap -= cost
 	occupied[target_cell] = unit
 
-	# Start move (no callback) and await the signal from Unit
 	unit.move_to_cell(target_cell, grid, Callable())
 	await unit.move_finished
 
@@ -119,6 +117,19 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 
 	attacker.ap -= attacker.attack_ap_cost
 
+	# Future-proof visual context: items/weapon can override these later.
+	# Example later: ctx["impact_fx"] = weapon.impact_fx_scene
+	var ctx: Dictionary = {
+		"use_directional_impact": true,
+		"impact_fx": attacker.vfx_profile.impact_fx if attacker.vfx_profile != null else null
+	}
+
+
+
+	# Attack animation (blocks action until it finishes)
+	await attacker.play_attack_animation_towards_cell(defender.cell)
+
+	# ---- resolution (your existing combat math) ----
 	var roll: int = rng.randi_range(1, 20)
 	var attack_score: int = roll + attacker.accuracy
 	var defense_score: int = 10 + defender.evasion
@@ -146,6 +157,10 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 	print(attacker.name, "rolled", roll, "(", attack_score, "vs", defense_score, "margin", margin, ") =>", tier_name, "for", dmg, "damage.",
 		" Defender HP:", defender.hp, "/", defender.max_hp, " Attacker AP:", attacker.ap)
 
+	# Impact FX (fire-and-forget)
+	defender.play_impact_fx_from_attacker(attacker, ctx)
+
+	# Death handling
 	if not defender.is_alive():
 		print(defender.name, "DOWNED")
 		occupied.erase(defender.cell)

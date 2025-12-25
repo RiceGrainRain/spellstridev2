@@ -1,16 +1,18 @@
-[gd_scene load_steps=13 format=4 uid="uid://catyvf7jdfa61"]
+[gd_scene load_steps=15 format=4 uid="uid://bumb1twadykbe"]
 
-[ext_resource type="Script" uid="uid://c3pvl2ohyuols" path="res://MatchCode/GridManager.gd" id="1_8gbba"]
-[ext_resource type="Script" uid="uid://bhsumsjotnofp" path="res://MatchCode/Match.gd" id="1_jjvhh"]
-[ext_resource type="Texture2D" uid="uid://7wl6iyg0by3e" path="res://assets/backgrounds/Tilesets/TilesetFloor.png" id="2_jjvhh"]
-[ext_resource type="Texture2D" uid="uid://7dpqeltqd0ba" path="res://assets/backgrounds/Tilesets/TilesetVillageAbandoned.png" id="3_kry3j"]
-[ext_resource type="PackedScene" uid="uid://c4xknq2rlu30u" path="res://Scenes/Unit.tscn" id="5_21xkr"]
-[ext_resource type="Script" uid="uid://p4rnx5qqdsic" path="res://MatchCode/GridOverlay.gd" id="7_6bp64"]
-[ext_resource type="Script" uid="uid://bo8wjrofy2t4l" path="res://Scenes/turn_manager.gd" id="7_344ge"]
-[ext_resource type="Script" uid="uid://dl1aagbds0cap" path="res://action_resolver.gd" id="8_344ge"]
+[ext_resource type="Script" uid="uid://bhsumsjotnofp" path="res://MatchCode/Match.gd" id="1_vn08p"]
+[ext_resource type="Texture2D" uid="uid://7wl6iyg0by3e" path="res://assets/backgrounds/Tilesets/TilesetFloor.png" id="2_6n0fa"]
+[ext_resource type="Texture2D" uid="uid://7dpqeltqd0ba" path="res://assets/backgrounds/Tilesets/TilesetVillageAbandoned.png" id="3_jdlt6"]
+[ext_resource type="Script" uid="uid://p4rnx5qqdsic" path="res://MatchCode/GridOverlay.gd" id="4_gd60q"]
+[ext_resource type="PackedScene" uid="uid://c4xknq2rlu30u" path="res://Scenes/Micro/Unit.tscn" id="5_pifqa"]
+[ext_resource type="Resource" uid="uid://bi36c62kvu54g" path="res://class_profiles/hunter.tres" id="6_vig26"]
+[ext_resource type="Script" uid="uid://c3pvl2ohyuols" path="res://MatchCode/GridManager.gd" id="7_vmbwa"]
+[ext_resource type="Script" uid="uid://dl1aagbds0cap" path="res://MatchCode/action_resolver.gd" id="8_enbcy"]
+[ext_resource type="Resource" uid="uid://qn7d38ui2tek" path="res://class_profiles/hunter_vfx.tres" id="8_jdlt6"]
+[ext_resource type="Script" uid="uid://bo8wjrofy2t4l" path="res://MatchCode/turn_manager.gd" id="9_pyf5s"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_21xkr"]
-texture = ExtResource("2_jjvhh")
+texture = ExtResource("2_6n0fa")
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
@@ -474,7 +476,7 @@ texture = ExtResource("2_jjvhh")
 sources/1 = SubResource("TileSetAtlasSource_21xkr")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_344ge"]
-texture = ExtResource("3_kry3j")
+texture = ExtResource("3_jdlt6")
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
@@ -714,46 +716,48 @@ texture = ExtResource("3_kry3j")
 [sub_resource type="TileSet" id="TileSet_ynf5e"]
 sources/0 = SubResource("TileSetAtlasSource_344ge")
 
-[node name="Main" type="Node"]
+[node name="Match" type="Node2D"]
+script = ExtResource("1_vn08p")
 
-[node name="Match" type="Node2D" parent="."]
-script = ExtResource("1_jjvhh")
+[node name="Level" type="Node2D" parent="."]
 
-[node name="Level" type="Node2D" parent="Match"]
-
-[node name="Camera2D" type="Camera2D" parent="Match/Level"]
+[node name="Camera2D" type="Camera2D" parent="Level"]
 position = Vector2(102, 102)
 zoom = Vector2(2.25, 2.25)
 
-[node name="GroundLayer" type="TileMapLayer" parent="Match/Level"]
+[node name="GroundLayer" type="TileMapLayer" parent="Level"]
 tile_map_data = PackedByteArray("AAAAAAAAAQAAAAwAAAAAAAEAAQAAAAwAAAAAAAIAAQAAAAwAAAAAAAMAAQAAAAwAAAAAAAQAAQAAAAwAAAAAAAUAAQAAAAwAAAAAAAYAAQAAAAwAAAAAAAcAAQAAAAwAAAAAAAgAAQAAAAwAAAAAAAkAAQAAAAwAAAAAAAoAAQAAAAwAAAAAAAsAAQAAAAwAAAABAAAAAQAAAAwAAAABAAEAAQAAAAwAAAABAAIAAQAAAAwAAAABAAMAAQAAAAwAAAABAAQAAQAAAAwAAAABAAUAAQAAAAwAAAABAAYAAQAAAAwAAAABAAcAAQAAAAwAAAABAAgAAQAAAAwAAAABAAkAAQAAAAwAAAABAAoAAQAAAAwAAAABAAsAAQAAAAwAAAACAAAAAQAAAAwAAAACAAEAAQAAAAwAAAACAAIAAQAAAAwAAAACAAMAAQAAAAwAAAACAAQAAQAAAAwAAAACAAUAAQAAAAwAAAACAAYAAQAAAAwAAAACAAcAAQAAAAwAAAACAAgAAQAAAAwAAAACAAkAAQAAAAwAAAACAAoAAQAAAAwAAAACAAsAAQAAAAwAAAADAAAAAQAAAAwAAAADAAEAAQAAAAwAAAADAAIAAQAAAAwAAAADAAMAAQAAAAwAAAADAAQAAQAAAAwAAAADAAUAAQAAAAwAAAADAAYAAQAAAAwAAAADAAcAAQAAAAwAAAADAAgAAQAAAAwAAAADAAkAAQAAAAwAAAADAAoAAQAAAAwAAAADAAsAAQAAAAwAAAAEAAAAAQAAAAwAAAAEAAEAAQAAAAwAAAAEAAIAAQAAAAwAAAAEAAMAAQAAAAwAAAAEAAQAAQAAAAwAAAAEAAUAAQAAAAwAAAAEAAYAAQAAAAwAAAAEAAcAAQAAAAwAAAAEAAgAAQAAAAwAAAAEAAkAAQAAAAwAAAAEAAoAAQAAAAwAAAAEAAsAAQAAAAwAAAAFAAAAAQAAAAwAAAAFAAEAAQAAAAwAAAAFAAIAAQAAAAwAAAAFAAMAAQAAAAwAAAAFAAQAAQAAAAwAAAAFAAUAAQAAAAwAAAAFAAYAAQAAAAwAAAAFAAcAAQAAAAwAAAAFAAgAAQAAAAwAAAAFAAkAAQAAAAwAAAAFAAoAAQAAAAwAAAAFAAsAAQAAAAwAAAAGAAAAAQAAAAwAAAAGAAEAAQAAAAwAAAAGAAIAAQAAAAwAAAAGAAMAAQAAAAwAAAAGAAQAAQAAAAwAAAAGAAUAAQAAAAwAAAAGAAYAAQAAAAwAAAAGAAcAAQAAAAwAAAAGAAgAAQAAAAwAAAAGAAkAAQAAAAwAAAAGAAoAAQAAAAwAAAAGAAsAAQAAAAwAAAAHAAAAAQAAAAwAAAAHAAEAAQAAAAwAAAAHAAIAAQAAAAwAAAAHAAMAAQAAAAwAAAAHAAQAAQAAAAwAAAAHAAUAAQAAAAwAAAAHAAYAAQAAAAwAAAAHAAcAAQAAAAwAAAAHAAgAAQAAAAwAAAAHAAkAAQAAAAwAAAAHAAoAAQAAAAwAAAAHAAsAAQAAAAwAAAAIAAAAAQAAAAwAAAAIAAEAAQAAAAwAAAAIAAIAAQAAAAwAAAAIAAMAAQAAAAwAAAAIAAQAAQAAAAwAAAAIAAUAAQAAAAwAAAAIAAYAAQAAAAwAAAAIAAcAAQAAAAwAAAAIAAgAAQAAAAwAAAAIAAkAAQAAAAwAAAAIAAoAAQAAAAwAAAAIAAsAAQAAAAwAAAAJAAAAAQAAAAwAAAAJAAEAAQAAAAwAAAAJAAIAAQAAAAwAAAAJAAMAAQAAAAwAAAAJAAQAAQAAAAwAAAAJAAUAAQAAAAwAAAAJAAYAAQAAAAwAAAAJAAcAAQAAAAwAAAAJAAgAAQAAAAwAAAAJAAkAAQAAAAwAAAAJAAoAAQAAAAwAAAAJAAsAAQAAAAwAAAAKAAAAAQAAAAwAAAAKAAEAAQAAAAwAAAAKAAIAAQAAAAwAAAAKAAMAAQAAAAwAAAAKAAQAAQAAAAwAAAAKAAUAAQAAAAwAAAAKAAYAAQAAAAwAAAAKAAcAAQAAAAwAAAAKAAgAAQAAAAwAAAAKAAkAAQAAAAwAAAAKAAoAAQAAAAwAAAAKAAsAAQAAAAwAAAALAAAAAQAAAAwAAAALAAEAAQAAAAwAAAALAAIAAQAAAAwAAAALAAMAAQAAAAwAAAALAAQAAQAAAAwAAAALAAUAAQAAAAwAAAALAAYAAQAAAAwAAAALAAcAAQAAAAwAAAALAAgAAQAAAAwAAAALAAkAAQAAAAwAAAALAAoAAQAAAAwAAAALAAsAAQAAAAwAAAA=")
 tile_set = SubResource("TileSet_6bp64")
 
-[node name="BlockerLayer" type="TileMapLayer" parent="Match/Level"]
+[node name="BlockerLayer" type="TileMapLayer" parent="Level"]
 tile_map_data = PackedByteArray("AAD+/wAAAAAEAAYAAAD+/wEAAAAEAAcAAAD+/wIAAAAEAAYAAAD+/wMAAAAEAAcAAAD+/wQAAAAEAAYAAAD+/wUAAAAEAAcAAAD+/wYAAAAEAAYAAAD+/wcAAAAEAAcAAAD+/wgAAAAEAAYAAAD+/wkAAAAEAAcAAAD+/woAAAAEAAYAAAD+/wsAAAAEAAcAAAD//wAAAAAFAAYAAAD//wEAAAAFAAcAAAD//wIAAAAFAAYAAAD//wMAAAAFAAcAAAD//wQAAAAFAAYAAAD//wUAAAAFAAcAAAD//wYAAAAFAAYAAAD//wcAAAAFAAcAAAD//wgAAAAFAAYAAAD//wkAAAAFAAcAAAD//woAAAAFAAYAAAD//wsAAAAFAAcAAAAAAP7/AAAEAAYAAAAAAP//AAAEAAcAAAAAAAsAAAAEAAYAAAAAAAwAAAAEAAcAAAABAP7/AAAFAAYAAAABAP//AAAFAAcAAAABAAsAAAAFAAYAAAABAAwAAAAFAAcAAAACAP7/AAAEAAYAAAACAP//AAAEAAcAAAACAAcAAAALAAMAAAACAAgAAAALAAQAAAACAAkAAAALAAUAAAACAAsAAAAEAAYAAAACAAwAAAAEAAcAAAADAP7/AAAFAAYAAAADAP//AAAFAAcAAAADAAcAAAAMAAMAAAADAAgAAAAMAAQAAAADAAkAAAAMAAUAAAADAAsAAAAFAAYAAAADAAwAAAAFAAcAAAAEAP7/AAAEAAYAAAAEAP//AAAEAAcAAAAEAAcAAAANAAMAAAAEAAgAAAANAAQAAAAEAAkAAAANAAUAAAAEAAsAAAAEAAYAAAAEAAwAAAAEAAcAAAAFAP7/AAAFAAYAAAAFAP//AAAFAAcAAAAFAAsAAAAFAAYAAAAFAAwAAAAFAAcAAAAGAP7/AAAEAAYAAAAGAP//AAAEAAcAAAAGAAAAAAAAAAAAAAAGAAEAAAAAAAEAAAAGAAIAAAAAAAIAAAAGAAsAAAAEAAYAAAAGAAwAAAAEAAcAAAAHAP7/AAAFAAYAAAAHAP//AAAFAAcAAAAHAAAAAAABAAAAAAAHAAEAAAABAAEAAAAHAAIAAAABAAIAAAAHAAsAAAAFAAYAAAAHAAwAAAAFAAcAAAAIAP7/AAAEAAYAAAAIAP//AAAEAAcAAAAIAAAAAAACAAAAAAAIAAEAAAACAAEAAAAIAAIAAAACAAIAAAAIAAsAAAAEAAYAAAAIAAwAAAAEAAcAAAAJAP7/AAAFAAYAAAAJAP//AAAFAAcAAAAJAAAAAAADAAAAAAAJAAEAAAADAAEAAAAJAAIAAAADAAIAAAAJAAsAAAAFAAYAAAAJAAwAAAAFAAcAAAAKAP7/AAAEAAYAAAAKAP//AAAEAAcAAAAKAAsAAAAEAAYAAAAKAAwAAAAEAAcAAAALAP7/AAAFAAYAAAALAP//AAAFAAcAAAALAAsAAAAFAAYAAAALAAwAAAAFAAcAAAAMAAAAAAAEAAYAAAAMAAEAAAAEAAcAAAAMAAIAAAAEAAYAAAAMAAMAAAAEAAcAAAAMAAQAAAAEAAYAAAAMAAUAAAAEAAcAAAAMAAYAAAAEAAYAAAAMAAcAAAAEAAcAAAAMAAgAAAAEAAYAAAAMAAkAAAAEAAcAAAAMAAoAAAAEAAYAAAAMAAsAAAAEAAcAAAANAAAAAAAFAAYAAAANAAEAAAAFAAcAAAANAAIAAAAFAAYAAAANAAMAAAAFAAcAAAANAAQAAAAFAAYAAAANAAUAAAAFAAcAAAANAAYAAAAFAAYAAAANAAcAAAAFAAcAAAANAAgAAAAFAAYAAAANAAkAAAAFAAcAAAANAAoAAAAFAAYAAAANAAsAAAAFAAcAAAA=")
 tile_set = SubResource("TileSet_ynf5e")
 
-[node name="GridOverlay" type="Node2D" parent="Match/Level"]
-script = ExtResource("7_6bp64")
+[node name="GridOverlay" type="Node2D" parent="Level"]
+script = ExtResource("4_gd60q")
 
-[node name="Units" type="Node2D" parent="Match"]
+[node name="Units" type="Node2D" parent="."]
 
-[node name="Unit" parent="Match/Units" instance=ExtResource("5_21xkr")]
+[node name="Unit" parent="Units" instance=ExtResource("5_pifqa")]
 position = Vector2(66, 71)
+anim_profile = ExtResource("6_vig26")
+vfx_profile = ExtResource("8_jdlt6")
 
-[node name="Unit2" parent="Match/Units" instance=ExtResource("5_21xkr")]
-position = Vector2(97, 71)
+[node name="Unit2" parent="Units" instance=ExtResource("5_pifqa")]
+position = Vector2(115, 71)
 team_id = 1
+anim_profile = ExtResource("6_vig26")
+vfx_profile = ExtResource("8_jdlt6")
 
-[node name="Controllers" type="Node" parent="Match"]
+[node name="Controllers" type="Node" parent="."]
 
-[node name="GridManager" type="Node" parent="Match/Controllers"]
-script = ExtResource("1_8gbba")
+[node name="GridManager" type="Node" parent="Controllers"]
+script = ExtResource("7_vmbwa")
 ground_layer_path = NodePath("../../Level/GroundLayer")
 blockers_layer_path = NodePath("../../Level/BlockerLayer")
 
-[node name="ActionResolver" type="Node" parent="Match/Controllers"]
-script = ExtResource("8_344ge")
+[node name="ActionResolver" type="Node" parent="Controllers"]
+script = ExtResource("8_enbcy")
 
-[node name="TurnManager" type="Node" parent="Match/Controllers"]
-script = ExtResource("7_344ge")
+[node name="TurnManager" type="Node" parent="Controllers"]
+script = ExtResource("9_pyf5s")

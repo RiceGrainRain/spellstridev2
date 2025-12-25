@@ -1,8 +1,25 @@
-[gd_scene load_steps=22 format=3 uid="uid://c4xknq2rlu30u"]
+[gd_scene load_steps=27 format=3 uid="uid://c4xknq2rlu30u"]
 
 [ext_resource type="Script" uid="uid://bdoebjetpml3d" path="res://MatchCode/Unit.gd" id="1_lymsv"]
+[ext_resource type="Texture2D" uid="uid://bqlmm64fdjr11" path="res://assets/Actor/Characters/ManGreen/SeparateAnim/Attack.png" id="2_8mmvs"]
 [ext_resource type="Texture2D" uid="uid://6gbf7b6pvnuf" path="res://assets/Actor/Characters/ManGreen/SeparateAnim/Idle.png" id="2_k67iv"]
 [ext_resource type="Texture2D" uid="uid://dbtyhk2kh1nul" path="res://assets/Actor/Characters/ManGreen/SeparateAnim/Walk.png" id="3_8mmvs"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bn6fq"]
+atlas = ExtResource("2_8mmvs")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dcdq5"]
+atlas = ExtResource("2_8mmvs")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k6v23"]
+atlas = ExtResource("2_8mmvs")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lwciq"]
+atlas = ExtResource("2_8mmvs")
+region = Rect2(16, 0, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_x1v5g"]
 atlas = ExtResource("2_k67iv")
@@ -76,10 +93,42 @@ region = Rect2(16, 48, 16, 16)
 animations = [{
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_bn6fq")
+}],
+"loop": true,
+"name": &"attack_down",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dcdq5")
+}],
+"loop": true,
+"name": &"attack_left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k6v23")
+}],
+"loop": true,
+"name": &"attack_right",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lwciq")
+}],
+"loop": true,
+"name": &"attack_up",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_x1v5g")
 }],
 "loop": true,
-"name": &"default",
+"name": &"idle",
 "speed": 5.0
 }, {
 "frames": [{
@@ -153,6 +202,7 @@ animations = [{
 
 [node name="Unit" type="Node2D"]
 script = ExtResource("1_lymsv")
+fx_anchor_path = NodePath("Marker2D")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 visible = false
@@ -164,4 +214,6 @@ color = Color(1, 1, 0, 1)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_ynf5e")
-frame_progress = 0.00664421
+animation = &"idle"
+
+[node name="Marker2D" type="Marker2D" parent="."]

@@ -1,0 +1,50 @@
+[gd_scene load_steps=8 format=3 uid="uid://cqpvshrc7kstb"]
+
+[ext_resource type="Script" uid="uid://m1ebheqwv4ol" path="res://MatchCode/Oneshot.gd" id="1_e4xqj"]
+[ext_resource type="Texture2D" uid="uid://dxe2djekdltlt" path="res://assets/FX/SlashFx/SlashDouble/SpriteSheet.png" id="1_hx643"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e4xqj"]
+atlas = ExtResource("1_hx643")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j6tuv"]
+atlas = ExtResource("1_hx643")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bdd0m"]
+atlas = ExtResource("1_hx643")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_45284"]
+atlas = ExtResource("1_hx643")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_artbt"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e4xqj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j6tuv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bdd0m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_45284")
+}],
+"loop": false,
+"name": &"impact_fx",
+"speed": 8.0
+}]
+
+[node name="SlashImpactFX" type="Node2D"]
+script = ExtResource("1_e4xqj")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_artbt")
+animation = &"impact_fx"
+frame = 3
+frame_progress = 1.0
