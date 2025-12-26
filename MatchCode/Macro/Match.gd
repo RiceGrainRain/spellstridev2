@@ -1,8 +1,6 @@
-# Match.gd (only change needed is: no change required for the lambda warning fix)
-# But here is the full current Match.gd as previously provided, unchanged except it will now work
-# because ActionResolver awaits Unit.move_finished signal.
-
 extends Node2D
+
+signal selected_unit_changed(unit: Unit)
 
 @onready var grid: GridManager = $Controllers/GridManager
 @onready var overlay: GridOverlay = $Level/GridOverlay
@@ -11,11 +9,13 @@ extends Node2D
 @onready var turn_manager: TurnManager = $Controllers/TurnManager
 @onready var action_resolver: ActionResolver = $Controllers/ActionResolver
 
+# UI (this node MUST have SelectedUnitPanel.gd attached)
+@onready var unit_hud: SelectedUnitPanel = $MatchHUD/UnitHUD
+
 var selected_unit: Unit = null
 var occupied: Dictionary = {} # Vector2i -> Unit
 
 var input_locked: bool = false
-
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -23,6 +23,41 @@ func _ready() -> void:
 	overlay.set_grid(grid)
 	occupied.clear()
 
+	# Debug the actual HUD reference + script attachment
+	print("=== HUD DEBUG ===")
+	print("Running scene:", get_tree().current_scene.name)
+
+	print("Has MatchHUD:", has_node("MatchHUD"))
+	print("Has MatchHUD/UnitHUD:", has_node("MatchHUD/UnitHUD"))
+
+	var hud := get_node_or_null("MatchHUD/UnitHUD")
+	print("hud node:", hud)
+
+	if hud != null:
+		print("hud class:", hud.get_class())
+		print("hud script:", hud.get_script())
+		if hud is CanvasItem:
+			print("hud visible:", (hud as CanvasItem).visible)
+			print("hud modulate:", (hud as CanvasItem).modulate)
+
+		if hud is Control:
+			var c := hud as Control
+			print("hud size:", c.size, " pos:", c.global_position, " anchors:", c.anchor_left, c.anchor_top, c.anchor_right, c.anchor_bottom)
+
+			# FORCE it on-screen for testing (won't hurt anything)
+			c.visible = true
+			c.modulate = Color(1, 1, 1, 1)
+			c.top_level = true
+			c.global_position = Vector2(40, 40)
+			c.size = Vector2(300, 120)
+	print("=================")
+
+	# Connect selection -> HUD (ONE pathway)
+	selected_unit_changed.connect(func(u: Unit) -> void:
+		unit_hud.bind(u) # or unit_hud.show_unit(u) depending on your script
+	)
+
+	# Init units
 	for child in units_node.get_children():
 		if child is Unit:
 			var u := child as Unit
@@ -55,11 +90,17 @@ func _ready() -> void:
 	action_resolver.setup(turn_manager, grid, units_node, occupied, rng)
 	turn_manager.start_match(units_node)
 
+	for child in units_node.get_children():
+		if child is Unit:
+			selected_unit_changed.emit(child as Unit)
+			break
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if Input.is_action_just_pressed("end_turn"):
 			turn_manager.end_turn()
 			return
+
 	if not turn_manager.can_accept_input():
 		return
 
@@ -112,11 +153,17 @@ func select_unit(u: Unit) -> void:
 	_set_unit_selected(u, true)
 	_update_overlay_for_selected()
 
+	# Notify UI (the ONLY call you need)
+	selected_unit_changed.emit(selected_unit)
+
 func clear_selection() -> void:
 	if selected_unit != null:
 		_set_unit_selected(selected_unit, false)
+
 	selected_unit = null
 	overlay.clear()
+
+	selected_unit_changed.emit(null)
 
 func _set_unit_selected(u: Unit, is_selected: bool) -> void:
 	var ring := u.get_node_or_null("SelectionRing")

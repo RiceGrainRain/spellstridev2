@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AttackVFXProfile" load_steps=3 format=3 uid="uid://qn7d38ui2tek"]
 
-[ext_resource type="Script" uid="uid://d24q7px2e3oa3" path="res://MatchCode/AttackVFXProfile.gd" id="1_koqk3"]
-[ext_resource type="PackedScene" uid="uid://cqpvshrc7kstb" path="res://class_profiles/fx/slash_impact_fx.tscn" id="1_t8inr"]
+[ext_resource type="Script" uid="uid://d24q7px2e3oa3" path="res://MatchCode/Macro/AttackVFXProfile.gd" id="1_koqk3"]
+[ext_resource type="PackedScene" uid="uid://cqpvshrc7kstb" path="res://class_profiles/fx/double_slash_fx.tscn" id="1_t8inr"]
 
 [resource]
 script = ExtResource("1_koqk3")

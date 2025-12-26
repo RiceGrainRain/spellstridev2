@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ClassStats" load_steps=3 format=3 uid="uid://dutkukdgtmdjq"]
+
+[ext_resource type="Script" uid="uid://jiqc6jnw6g1c" path="res://MatchCode/Micro/Class_Stats.gd" id="1_a4n3b"]
+[ext_resource type="Texture2D" uid="uid://dfauymvc6l71n" path="res://assets/Actor/Characters/GladiatorBlue/Faceset.png" id="1_r4u2s"]
+
+[resource]
+script = ExtResource("1_a4n3b")
+class_id = 2
+class_icon = ExtResource("1_r4u2s")
+max_hp = 80
+accuracy = 2
+evasion = 2
+attack_range = 2
+base_damage = 2
+attack_ap_cost = 2
+max_ap = 4
+move_duration = 2.0
+metadata/_custom_type_script = "uid://jiqc6jnw6g1c"

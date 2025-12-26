@@ -4,53 +4,109 @@ class_name Unit
 signal move_finished(unit: Unit)
 signal downed_finished(unit: Unit)
 
+signal hp_changed(unit: Unit, new_hp: int, old_hp: int)
+signal ap_changed(unit: Unit, new_ap: int, old_ap: int)
+signal armor_changed(unit: Unit, new_armor: int, old_armor: int)
+
 @export var team_id: int = 0
 
-# Action economy
-@export var max_ap: int = 4
-@export var move_duration: float = 0.2
-
-# Combat stats (MVP)
-@export var class_id = 1
-@export var max_hp: int = 40
-@export var accuracy: int = 2
-@export var evasion: int = 2
-@export var attack_range: int = 1
-@export var base_damage: int = 12
-@export var attack_ap_cost: int = 2
-
-# Visuals configuration (data-driven per class)
+# Data-driven loadout
+@export var class_stats: ClassStats
 @export var anim_profile: AnimationProfile
 @export var vfx_profile: AttackVFXProfile
-@export var fx_anchor_path: NodePath = NodePath("") # optional Marker2D/Node2D for FX spawn point
+@export var fx_anchor_path: NodePath = NodePath("")
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
-var ap: int = 4
-var hp: int = 40
+# Runtime state
+var ap: int = 0
+var hp: int = 0
+var armor: int = 0
+
 var cell: Vector2i
 var is_moving: bool = false
 var is_downed: bool = false
 
-func _ready() -> void:
-	hp = max_hp
-	ap = max_ap
 
+func _ready() -> void:
+	if anim_profile != null and anim_profile.idle != "":
+		$AnimatedSprite2D.play(anim_profile.idle)
+
+	# Initialize from ClassStats (authoritative defaults)
+	if class_stats != null:
+		hp = class_stats.max_hp
+		ap = class_stats.max_ap
+		armor = class_stats.armor
+	else:
+		# Safe fallbacks
+		hp = 1
+		ap = 0
+		armor = 0
+
+	# Optional: emit initial values so UI can bind late and still render correctly
+	hp_changed.emit(self, hp, hp)
+	ap_changed.emit(self, ap, ap)
+	armor_changed.emit(self, armor, armor)
+
+
+# -------------------------
+# Grid placement
+# -------------------------
 func set_cell(new_cell: Vector2i, grid: GridManager) -> void:
 	cell = new_cell
 	global_position = grid.cell_to_world_center(cell)
 
-func reset_ap() -> void:
-	ap = max_ap
 
+# -------------------------
+# Action economy
+# -------------------------
+func reset_ap() -> void:
+	set_ap(class_stats.max_ap if class_stats != null else 0)
+
+func spend_ap(cost: int) -> bool:
+	if cost <= 0:
+		return true
+	if ap < cost:
+		return false
+	set_ap(ap - cost)
+	return true
+
+func set_ap(new_ap: int) -> void:
+	var old := ap
+	ap = max(new_ap, 0)
+	if ap != old:
+		ap_changed.emit(self, ap, old)
+
+func set_armor(new_armor: int) -> void:
+	var old := armor
+	armor = max(new_armor, 0)
+	if armor != old:
+		armor_changed.emit(self, armor, old)
+
+
+# -------------------------
+# Life state
+# -------------------------
 func is_alive() -> bool:
-	# "Alive" for gameplay purposes means not downed and hp > 0
 	return hp > 0 and not is_downed
 
 func take_damage(amount: int) -> void:
-	hp -= amount
-	if hp < 0:
-		hp = 0
+	var remaining: int = max(amount, 0)
+
+	if remaining <= 0:
+		return
+
+	if armor > 0:
+		var absorbed: int = min(armor, remaining)
+		set_armor(armor - absorbed)
+		remaining -= absorbed
+
+	if remaining > 0:
+		var old_hp := hp
+		hp = max(hp - remaining, 0)
+		if hp != old_hp:
+			hp_changed.emit(self, hp, old_hp)
+
 
 # -------------------------
 # Downed / death visuals
@@ -60,7 +116,7 @@ func down_and_play_animation() -> void:
 		return
 
 	is_downed = true
-	ap = 0
+	set_ap(0)
 	is_moving = false
 
 	if sprite == null or sprite.sprite_frames == null:
@@ -82,6 +138,7 @@ func down_and_play_animation() -> void:
 
 	downed_finished.emit(self)
 
+
 # -------------------------
 # Movement
 # -------------------------
@@ -102,7 +159,7 @@ func move_to_cell(target_cell: Vector2i, grid: GridManager, on_complete: Callabl
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(self, "global_position", target_pos, move_duration)
+	tween.tween_property(self, "global_position", target_pos, class_stats.move_duration if class_stats != null else 0.2)
 
 	tween.finished.connect(func():
 		is_moving = false
@@ -113,6 +170,7 @@ func move_to_cell(target_cell: Vector2i, grid: GridManager, on_complete: Callabl
 		if on_complete.is_valid():
 			on_complete.call()
 	)
+
 
 # -------------------------
 # Combat visuals (future-proof hooks)
@@ -189,6 +247,7 @@ func _fx_anchor_global_pos() -> Vector2:
 		if n != null and n is Node2D:
 			return (n as Node2D).global_position
 	return global_position
+
 
 # -------------------------
 # Anim helpers

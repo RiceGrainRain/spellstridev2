@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AttackVFXProfile" load_steps=3 format=3 uid="uid://bd5s7q2h5c6ls"]
+
+[ext_resource type="Script" uid="uid://d24q7px2e3oa3" path="res://MatchCode/Macro/AttackVFXProfile.gd" id="1_8m143"]
+[ext_resource type="PackedScene" uid="uid://xflrqfpe86bo" path="res://class_profiles/fx/slash_fx.tscn" id="1_l7n78"]
+
+[resource]
+script = ExtResource("1_8m143")
+impact_fx = ExtResource("1_l7n78")
+metadata/_custom_type_script = "uid://d24q7px2e3oa3"

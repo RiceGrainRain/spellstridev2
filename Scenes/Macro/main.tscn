@@ -1,115 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://catyvf7jdfa61"]
+[gd_scene load_steps=3 format=3 uid="uid://catyvf7jdfa61"]
 
 [ext_resource type="PackedScene" uid="uid://bumb1twadykbe" path="res://Scenes/Macro/Match.tscn" id="1_cdygy"]
-[ext_resource type="Texture2D" uid="uid://pw5d613yp1e" path="res://assets/background 1/1.png" id="2_38ujm"]
-[ext_resource type="Shader" uid="uid://cdun5i82ddqi4" path="res://Scenes/Macro/1.gdshader" id="2_rgmax"]
-[ext_resource type="Texture2D" uid="uid://8447o7eb08qg" path="res://assets/background 1/2.png" id="3_n33fe"]
-[ext_resource type="Shader" uid="uid://c6an6j8lyjbln" path="res://Scenes/Macro/3.gdshader" id="4_rgmax"]
-[ext_resource type="Texture2D" uid="uid://d1svnhnlfr557" path="res://assets/background 1/3.png" id="5_l0610"]
-[ext_resource type="Shader" uid="uid://bodvvkrdcwsm0" path="res://Scenes/Macro/4.gdshader" id="6_gq3ex"]
-[ext_resource type="Texture2D" uid="uid://bxwh4j4y6vpnh" path="res://assets/background 1/4.png" id="7_8fcor"]
-[ext_resource type="FontFile" uid="uid://iyo6gxnksikb" path="res://assets/fonts/m3x6.ttf" id="9_l0610"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_gq3ex"]
-shader = ExtResource("2_rgmax")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_a1ahb"]
-shader = ExtResource("4_rgmax")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_38ujm"]
-shader = ExtResource("6_gq3ex")
+[ext_resource type="PackedScene" uid="uid://oba7dhttpasr" path="res://Scenes/Macro/menu.tscn" id="2_dylnh"]
 
 [node name="Main" type="Node"]
 
 [node name="Match" parent="." instance=ExtResource("1_cdygy")]
-visible = false
 
-[node name="Control" type="Control" parent="."]
-layout_mode = 3
-anchor_left = -0.135
-anchor_top = -0.065000005
-anchor_right = 0.31
-anchor_bottom = 0.37800002
-offset_left = -0.47999573
-offset_top = 0.12000275
-offset_right = -0.11999512
-offset_bottom = 0.055984497
-
-[node name="1" type="TextureRect" parent="Control"]
-texture_repeat = 2
-material = SubResource("ShaderMaterial_gq3ex")
-layout_mode = 0
-offset_left = -4.5776367e-05
-offset_right = 575.99994
-offset_bottom = 324.0
-scale = Vector2(0.889, 0.885)
-texture = ExtResource("2_38ujm")
-
-[node name="2" type="TextureRect" parent="Control"]
-layout_mode = 0
-offset_left = -4.5776367e-05
-offset_right = 575.99994
-offset_bottom = 324.0
-scale = Vector2(0.889, 0.885)
-texture = ExtResource("3_n33fe")
-
-[node name="3" type="TextureRect" parent="Control"]
-texture_repeat = 2
-material = SubResource("ShaderMaterial_a1ahb")
-layout_mode = 0
-offset_left = -4.5776367e-05
-offset_right = 575.99994
-offset_bottom = 324.0
-scale = Vector2(0.889, 0.885)
-texture = ExtResource("5_l0610")
-
-[node name="4" type="TextureRect" parent="Control"]
-texture_repeat = 2
-material = SubResource("ShaderMaterial_38ujm")
-layout_mode = 0
-offset_left = -1.5258789e-05
-offset_right = 576.0
-offset_bottom = 324.0
-scale = Vector2(0.889, 0.885)
-texture = ExtResource("7_8fcor")
-
-[node name="Label" type="Label" parent="Control"]
-layout_mode = 0
-offset_left = 156.0
-offset_top = 74.0
-offset_right = 449.0
-offset_bottom = 138.0
-theme_override_fonts/font = ExtResource("9_l0610")
-theme_override_font_sizes/font_size = 80
-text = "SPELLSTRIDE"
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
-layout_mode = 0
-offset_left = 214.0
-offset_top = 154.0
-offset_right = 279.0
-offset_bottom = 287.0
-
-[node name="Play" type="Button" parent="Control/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("9_l0610")
-theme_override_font_sizes/font_size = 32
-text = "PLAY"
-flat = true
-
-[node name="Menu" type="Button" parent="Control/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("9_l0610")
-theme_override_font_sizes/font_size = 32
-text = "MENU"
-flat = true
-
-[node name="Exit" type="Button" parent="Control/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("9_l0610")
-theme_override_font_sizes/font_size = 32
-text = "EXIT"
-flat = true
+[node name="Control" parent="." instance=ExtResource("2_dylnh")]
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(102, 102)

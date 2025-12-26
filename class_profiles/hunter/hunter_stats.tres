@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ClassStats" load_steps=3 format=3 uid="uid://cbc7c1ugatr1u"]
+
+[ext_resource type="Script" uid="uid://jiqc6jnw6g1c" path="res://MatchCode/Micro/Class_Stats.gd" id="1_07ys3"]
+[ext_resource type="Texture2D" uid="uid://di11c14x70ery" path="res://assets/Actor/Characters/ManGreen/Faceset1.png" id="1_xaqsd"]
+
+[resource]
+script = ExtResource("1_07ys3")
+class_id = 1
+class_icon = ExtResource("1_xaqsd")
+max_hp = 40
+accuracy = 2
+evasion = 2
+attack_range = 1
+base_damage = 12
+attack_ap_cost = 2
+max_ap = 4
+move_duration = 0.2
+metadata/_custom_type_script = "uid://jiqc6jnw6g1c"

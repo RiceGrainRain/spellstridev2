@@ -1,3 +1,4 @@
+# Actio
 extends Node
 class_name ActionResolver
 
@@ -88,6 +89,10 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 	if attacker == null or defender == null:
 		print("do_attack: null unit")
 		return false
+	if attacker.class_stats == null or defender.class_stats == null:
+		print("do_attack: missing ClassStats on attacker/defender")
+		return false
+
 	if turn_manager == null or grid == null:
 		print("do_attack: missing refs")
 		return false
@@ -103,36 +108,36 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 	if attacker.team_id == defender.team_id:
 		print("do_attack: same team")
 		return false
-	if attacker.ap < attacker.attack_ap_cost:
+
+	var ap_cost: int = attacker.class_stats.attack_ap_cost
+	if attacker.ap < ap_cost:
 		print("do_attack: not enough AP")
 		return false
 
 	var dist: int = grid.manhattan_distance(attacker.cell, defender.cell)
-	if dist > attacker.attack_range:
-		print("do_attack: out of range dist=", dist, " range=", attacker.attack_range)
+	var range: int = attacker.class_stats.attack_range
+	if dist > range:
+		print("do_attack: out of range dist=", dist, " range=", range)
 		return false
 
 	turn_manager.on_action_started()
 	action_started.emit("attack")
 
-	attacker.ap -= attacker.attack_ap_cost
+	attacker.ap -= ap_cost
 
-	# Future-proof visual context: items/weapon can override these later.
-	# Example later: ctx["impact_fx"] = weapon.impact_fx_scene
+	# Attacker determines the impact effect via context override.
 	var ctx: Dictionary = {
 		"use_directional_impact": true,
 		"impact_fx": attacker.vfx_profile.impact_fx if attacker.vfx_profile != null else null
 	}
 
-
-
 	# Attack animation (blocks action until it finishes)
 	await attacker.play_attack_animation_towards_cell(defender.cell)
 
-	# ---- resolution (your existing combat math) ----
+	# ---- resolution (dice + stats from ClassStats) ----
 	var roll: int = rng.randi_range(1, 20)
-	var attack_score: int = roll + attacker.accuracy
-	var defense_score: int = 10 + defender.evasion
+	var attack_score: int = roll + attacker.class_stats.accuracy
+	var defense_score: int = 10 + defender.class_stats.evasion
 	var margin: int = attack_score - defense_score
 
 	var tier_name: String = ""
@@ -151,16 +156,23 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 		tier_name = "CRITICAL"
 		dmg_mult = 1.25
 
-	var dmg: int = int(round(attacker.base_damage * dmg_mult))
-	defender.take_damage(dmg)
+	var raw_damage: int = int(round(attacker.class_stats.base_damage * dmg_mult))
 
-	print(attacker.name, "rolled", roll, "(", attack_score, "vs", defense_score, "margin", margin, ") =>", tier_name, "for", dmg, "damage.",
-		" Defender HP:", defender.hp, "/", defender.max_hp, " Attacker AP:", attacker.ap)
 
-	# Impact FX (fire-and-forget)
+	var armor: int = defender.class_stats.armor
+	var final_damage: int = max(0, raw_damage - armor)
+
+
+	defender.take_damage(final_damage)
+
+	print(attacker.name, "rolled", roll, "(", attack_score, "vs", defense_score, "margin", margin, ") =>", tier_name,
+		" raw=", raw_damage, " armor=", armor, " final=", final_damage,
+		" Defender HP:", defender.hp, "/", defender.class_stats.max_hp,
+		" Attacker AP:", attacker.ap)
+
 	defender.play_impact_fx_from_attacker(attacker, ctx)
 
-	# Death handling
+
 	if not defender.is_alive():
 		print(defender.name, "DOWNED")
 		occupied.erase(defender.cell)

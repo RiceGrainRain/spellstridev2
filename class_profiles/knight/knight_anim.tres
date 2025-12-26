@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AnimationProfile" load_steps=2 format=3 uid="uid://b5f6t7wafjye6"]
+
+[ext_resource type="Script" uid="uid://dxa0up3rahmcs" path="res://MatchCode/Macro/AnimProfile.gd" id="1_x6xo2"]
+
+[resource]
+script = ExtResource("1_x6xo2")
+idle = "kidle"
+walk_left = "kwalk_left"
+walk_right = "kwalk_right"
+walk_up = "kwalk_up"
+walk_down = "kwalk_down"
+attack_left = "kattack_left"
+attack_right = "kattack_right"
+attack_up = "kattack_up"
+attack_down = "kattack_down"
+downed = "kdowned"
+metadata/_custom_type_script = "uid://dxa0up3rahmcs"
