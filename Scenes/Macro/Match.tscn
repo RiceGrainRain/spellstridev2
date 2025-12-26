@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=4 uid="uid://bumb1twadykbe"]
+[gd_scene load_steps=27 format=4 uid="uid://bumb1twadykbe"]
 
 [ext_resource type="Script" uid="uid://bhsumsjotnofp" path="res://MatchCode/Macro/Match.gd" id="1_vn08p"]
 [ext_resource type="Texture2D" uid="uid://7wl6iyg0by3e" path="res://assets/backgrounds/Tilesets/TilesetFloor.png" id="2_6n0fa"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://q1kfwdjlew4s" path="res://assets/Ui/Receptacle/Receptacle Sphere/BackgroundIron2.png" id="2_vmbwa"]
 [ext_resource type="Texture2D" uid="uid://7dpqeltqd0ba" path="res://assets/backgrounds/Tilesets/TilesetVillageAbandoned.png" id="3_jdlt6"]
 [ext_resource type="Script" uid="uid://p4rnx5qqdsic" path="res://MatchCode/Macro/GridOverlay.gd" id="4_gd60q"]
+[ext_resource type="Shader" uid="uid://c0fnd2yweaw47" path="res://Scenes/Macro/classicon.gdshader" id="4_x1gyx"]
 [ext_resource type="PackedScene" uid="uid://c4xknq2rlu30u" path="res://Scenes/Micro/Unit.tscn" id="5_pifqa"]
 [ext_resource type="Resource" uid="uid://cbc7c1ugatr1u" path="res://class_profiles/hunter/hunter_stats.tres" id="6_jdlt6"]
 [ext_resource type="Resource" uid="uid://bi36c62kvu54g" path="res://class_profiles/hunter/hunter_anim.tres" id="6_vig26"]
@@ -17,26 +18,6 @@
 [ext_resource type="Script" uid="uid://bo8wjrofy2t4l" path="res://MatchCode/Macro/turn_manager.gd" id="9_pyf5s"]
 [ext_resource type="Resource" uid="uid://b5f6t7wafjye6" path="res://class_profiles/knight/knight_anim.tres" id="10_vig26"]
 [ext_resource type="Resource" uid="uid://bd5s7q2h5c6ls" path="res://class_profiles/knight/knight_vfx.tres" id="11_vig26"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pyf5s"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x1gyx"]
-bg_color = Color(0, 0.5851858, 0.1671013, 1)
-border_width_top = 20
-border_width_right = 10
-border_width_bottom = 20
-border_color = Color(0.5529412, 0.5921569, 0.49803922, 1)
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vb7k5"]
-bg_color = Color(0.7598554, 0.08768926, 0, 1)
-border_width_top = 20
-border_width_right = 10
-border_width_bottom = 20
-border_color = Color(0.5529412, 0.5921569, 0.49803922, 1)
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_21xkr"]
 texture = ExtResource("2_6n0fa")
@@ -743,103 +724,32 @@ texture = ExtResource("3_jdlt6")
 [sub_resource type="TileSet" id="TileSet_ynf5e"]
 sources/0 = SubResource("TileSetAtlasSource_344ge")
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pyf5s"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x1gyx"]
+bg_color = Color(0, 0.5851858, 0.1671013, 1)
+border_width_top = 20
+border_width_right = 10
+border_width_bottom = 20
+border_color = Color(0.5529412, 0.5921569, 0.49803922, 1)
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vb7k5"]
+bg_color = Color(0.7598554, 0.08768926, 0, 1)
+border_width_top = 20
+border_width_right = 10
+border_width_bottom = 20
+border_color = Color(0.5529412, 0.5921569, 0.49803922, 1)
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vb7k5"]
+shader = ExtResource("4_x1gyx")
+shader_parameter/softness = 0.02
+
 [node name="Match" type="Node2D"]
 script = ExtResource("1_vn08p")
-
-[node name="MatchHUD" type="CanvasLayer" parent="."]
-
-[node name="UnitHUD" type="Control" parent="MatchHUD"]
-layout_mode = 3
-anchors_preset = 0
-offset_left = -153.0
-offset_top = -42.0
-offset_right = 357.0
-offset_bottom = 247.0
-script = ExtResource("2_pyf5s")
-icon_path = NodePath("MarginContainer/VBoxContainer/Control/ClassIcon/TextureRect")
-hp_bar_path = NodePath("Control/Healthbar")
-ap_bar_path = NodePath("Control2/APBar")
-
-[node name="Control" type="Control" parent="MatchHUD/UnitHUD"]
-anchors_preset = 0
-offset_right = 510.0
-offset_bottom = 289.0
-
-[node name="Healthbar" type="ProgressBar" parent="MatchHUD/UnitHUD/Control"]
-layout_mode = 1
-anchors_preset = -1
-anchor_top = -0.025
-anchor_right = 1.0
-anchor_bottom = 0.95600003
-offset_left = 43.0
-offset_top = 31.225
-offset_right = -332.0
-offset_bottom = -127.36412
-grow_vertical = 2
-scale = Vector2(0.8, 0.1)
-theme_override_constants/outline_size = 10
-theme_override_fonts/font = ExtResource("2_enbcy")
-theme_override_font_sizes/font_size = 34
-theme_override_styles/background = SubResource("StyleBoxEmpty_pyf5s")
-theme_override_styles/fill = SubResource("StyleBoxFlat_x1gyx")
-value = 100.0
-rounded = true
-show_percentage = false
-
-[node name="Control2" type="Control" parent="MatchHUD/UnitHUD"]
-anchors_preset = 0
-offset_right = 510.0
-offset_bottom = 289.0
-
-[node name="APBar" type="ProgressBar" parent="MatchHUD/UnitHUD/Control2"]
-layout_mode = 1
-anchors_preset = -1
-anchor_top = -0.025
-anchor_right = 1.0
-anchor_bottom = 0.95600003
-offset_left = 43.0
-offset_top = 45.225
-offset_right = -343.25
-offset_bottom = -118.28401
-grow_vertical = 2
-scale = Vector2(0.8, 0.1)
-theme_override_constants/outline_size = 10
-theme_override_fonts/font = ExtResource("2_enbcy")
-theme_override_font_sizes/font_size = 34
-theme_override_styles/background = SubResource("StyleBoxEmpty_pyf5s")
-theme_override_styles/fill = SubResource("StyleBoxFlat_vb7k5")
-value = 100.0
-rounded = true
-show_percentage = false
-
-[node name="MarginContainer" type="MarginContainer" parent="MatchHUD/UnitHUD"]
-layout_mode = 0
-offset_right = 510.0
-offset_bottom = 289.0
-theme_override_constants/margin_left = 7
-theme_override_constants/margin_top = 7
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MatchHUD/UnitHUD/MarginContainer"]
-layout_mode = 2
-
-[node name="Control" type="Control" parent="MatchHUD/UnitHUD/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(20, 20)
-layout_mode = 2
-
-[node name="ClassIcon" type="TextureRect" parent="MatchHUD/UnitHUD/MarginContainer/VBoxContainer/Control"]
-custom_minimum_size = Vector2(20, 0)
-layout_mode = 0
-offset_top = 4.0
-offset_right = 503.0
-offset_bottom = 54.0
-texture = ExtResource("2_vmbwa")
-expand_mode = 2
-stretch_mode = 4
-
-[node name="TextureRect" type="TextureRect" parent="MatchHUD/UnitHUD/MarginContainer/VBoxContainer/Control/ClassIcon"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
 
 [node name="Level" type="Node2D" parent="."]
 
@@ -868,6 +778,95 @@ team_id = 1
 class_stats = ExtResource("9_pifqa")
 anim_profile = ExtResource("10_vig26")
 vfx_profile = ExtResource("11_vig26")
+
+[node name="UnitHUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -153.0
+offset_top = -42.0
+offset_right = 357.0
+offset_bottom = 247.0
+mouse_filter = 2
+script = ExtResource("2_pyf5s")
+icon_path = NodePath("Portrait/ClassIcon")
+hp_bar_path = NodePath("Control/Healthbar")
+ap_bar_path = NodePath("Control2/APBar")
+
+[node name="Control" type="Control" parent="UnitHUD"]
+anchors_preset = 0
+offset_right = 510.0
+offset_bottom = 289.0
+
+[node name="Healthbar" type="ProgressBar" parent="UnitHUD/Control"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = -0.025
+anchor_right = 1.0
+anchor_bottom = 0.95600003
+offset_left = 43.0
+offset_top = 31.225
+offset_right = -332.0
+offset_bottom = -127.36412
+grow_vertical = 2
+scale = Vector2(0.8, 0.1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("2_enbcy")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/background = SubResource("StyleBoxEmpty_pyf5s")
+theme_override_styles/fill = SubResource("StyleBoxFlat_x1gyx")
+value = 100.0
+rounded = true
+show_percentage = false
+
+[node name="Control2" type="Control" parent="UnitHUD"]
+anchors_preset = 0
+offset_right = 510.0
+offset_bottom = 289.0
+
+[node name="APBar" type="ProgressBar" parent="UnitHUD/Control2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = -0.025
+anchor_right = 1.0
+anchor_bottom = 0.95600003
+offset_left = 43.0
+offset_top = 45.225
+offset_right = -343.25
+offset_bottom = -118.28401
+grow_vertical = 2
+scale = Vector2(0.8, 0.1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("2_enbcy")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/background = SubResource("StyleBoxEmpty_pyf5s")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vb7k5")
+value = 100.0
+rounded = true
+show_percentage = false
+
+[node name="Portrait" type="Control" parent="UnitHUD"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Receptacle" type="TextureRect" parent="UnitHUD/Portrait"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 17.0
+offset_right = 54.0
+offset_bottom = 57.0
+texture = ExtResource("2_vmbwa")
+
+[node name="ClassIcon" type="TextureRect" parent="UnitHUD/Portrait"]
+material = SubResource("ShaderMaterial_vb7k5")
+layout_mode = 0
+offset_left = 18.0
+offset_top = 21.999998
+offset_right = 48.0
+offset_bottom = 52.0
+scale = Vector2(1.05, 1.05)
+expand_mode = 2
+stretch_mode = 6
 
 [node name="Controllers" type="Node" parent="."]
 

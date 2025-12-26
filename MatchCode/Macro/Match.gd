@@ -9,8 +9,8 @@ signal selected_unit_changed(unit: Unit)
 @onready var turn_manager: TurnManager = $Controllers/TurnManager
 @onready var action_resolver: ActionResolver = $Controllers/ActionResolver
 
-# UI (this node MUST have SelectedUnitPanel.gd attached)
-@onready var unit_hud: SelectedUnitPanel = $MatchHUD/UnitHUD
+# UI (UnitHUD is a direct child of Match)
+@onready var unit_hud: SelectedUnitPanel = $UnitHUD
 
 var selected_unit: Unit = null
 var occupied: Dictionary = {} # Vector2i -> Unit
@@ -23,41 +23,20 @@ func _ready() -> void:
 	overlay.set_grid(grid)
 	occupied.clear()
 
-	# Debug the actual HUD reference + script attachment
-	print("=== HUD DEBUG ===")
-	print("Running scene:", get_tree().current_scene.name)
+	# Ensure HUD never blocks world clicks (recursively)
+	_set_ui_mouse_filter_recursive(unit_hud, Control.MOUSE_FILTER_IGNORE)
 
-	print("Has MatchHUD:", has_node("MatchHUD"))
-	print("Has MatchHUD/UnitHUD:", has_node("MatchHUD/UnitHUD"))
-
-	var hud := get_node_or_null("MatchHUD/UnitHUD")
-	print("hud node:", hud)
-
-	if hud != null:
-		print("hud class:", hud.get_class())
-		print("hud script:", hud.get_script())
-		if hud is CanvasItem:
-			print("hud visible:", (hud as CanvasItem).visible)
-			print("hud modulate:", (hud as CanvasItem).modulate)
-
-		if hud is Control:
-			var c := hud as Control
-			print("hud size:", c.size, " pos:", c.global_position, " anchors:", c.anchor_left, c.anchor_top, c.anchor_right, c.anchor_bottom)
-
-			# FORCE it on-screen for testing (won't hurt anything)
-			c.visible = true
-			c.modulate = Color(1, 1, 1, 1)
-			c.top_level = true
-			c.global_position = Vector2(40, 40)
-			c.size = Vector2(300, 120)
-	print("=================")
-
-	# Connect selection -> HUD (ONE pathway)
+	# Selection -> HUD
 	selected_unit_changed.connect(func(u: Unit) -> void:
-		unit_hud.bind(u) # or unit_hud.show_unit(u) depending on your script
+		if unit_hud != null:
+			# Your HUD script can implement either bind() or show_unit().
+			if unit_hud.has_method("bind"):
+				unit_hud.call("bind", u)
+			elif unit_hud.has_method("show_unit"):
+				unit_hud.call("show_unit", u)
 	)
 
-	# Init units
+	# Init units on grid + occupied map
 	for child in units_node.get_children():
 		if child is Unit:
 			var u := child as Unit
@@ -65,24 +44,17 @@ func _ready() -> void:
 			u.set_cell(c, grid)
 			u.reset_ap()
 			occupied[c] = u
-			print("INIT unit:", u.name, " team=", u.team_id, " cell=", u.cell, " hp=", u.hp, " ap=", u.ap)
 
 	turn_manager.input_locked_changed.connect(func(locked: bool) -> void:
 		input_locked = locked
 	)
 
 	turn_manager.team_turn_started.connect(func(team_id: int) -> void:
-		print("TURN START: team", team_id)
 		if selected_unit != null and selected_unit.team_id != team_id:
 			clear_selection()
 	)
 
-	turn_manager.team_turn_ended.connect(func(team_id: int) -> void:
-		print("TURN END: team", team_id)
-	)
-
 	turn_manager.match_won.connect(func(winning_team_id: int) -> void:
-		print("MATCH OVER: team", winning_team_id, "wins!")
 		clear_selection()
 		overlay.clear()
 	)
@@ -90,15 +62,22 @@ func _ready() -> void:
 	action_resolver.setup(turn_manager, grid, units_node, occupied, rng)
 	turn_manager.start_match(units_node)
 
-	for child in units_node.get_children():
-		if child is Unit:
-			selected_unit_changed.emit(child as Unit)
-			break
+	# Start with no selection (HUD hidden/empty depending on your HUD script)
+	selected_unit_changed.emit(null)
 
-func _unhandled_input(event: InputEvent) -> void:
+# Use _input (not _unhandled_input) so world clicks still work even if UI exists.
+# Prevent click-through: if mouse is over ANY Control, ignore world input.
+func _input(event: InputEvent) -> void:
+	# End turn hotkey
 	if event is InputEventKey and event.pressed and not event.echo:
 		if Input.is_action_just_pressed("end_turn"):
 			turn_manager.end_turn()
+			return
+
+	# If UI is hovered, don't process world clicks
+	if event is InputEventMouseButton and event.pressed:
+		var hovered := get_viewport().gui_get_hovered_control()
+		if hovered != null:
 			return
 
 	if not turn_manager.can_accept_input():
@@ -110,10 +89,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		var clicked_unit := _get_unit_hit(mouse_world)
 		if clicked_unit != null:
+			# Attack if enemy + you already have a selected unit
 			if selected_unit != null and clicked_unit != selected_unit and clicked_unit.team_id != selected_unit.team_id:
 				await try_attack_selected(clicked_unit)
 				return
 
+			# Can't select enemy units on other team’s turn
 			if clicked_unit.team_id != turn_manager.active_team_id:
 				clear_selection()
 				return
@@ -121,6 +102,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			select_unit(clicked_unit)
 			return
 
+		# Clicked empty tile
 		if selected_unit != null:
 			await try_move_selected(clicked_cell)
 			return
@@ -153,7 +135,6 @@ func select_unit(u: Unit) -> void:
 	_set_unit_selected(u, true)
 	_update_overlay_for_selected()
 
-	# Notify UI (the ONLY call you need)
 	selected_unit_changed.emit(selected_unit)
 
 func clear_selection() -> void:
@@ -210,3 +191,11 @@ func try_attack_selected(target: Unit) -> void:
 
 	if ok:
 		_update_overlay_for_selected()
+
+func _set_ui_mouse_filter_recursive(n: Node, filter: int) -> void:
+	if n == null:
+		return
+	if n is Control:
+		(n as Control).mouse_filter = filter
+	for c in n.get_children():
+		_set_ui_mouse_filter_recursive(c, filter)
