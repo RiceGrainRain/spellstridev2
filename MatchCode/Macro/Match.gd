@@ -15,7 +15,6 @@ signal selected_unit_changed(unit: Unit)
 var selected_unit: Unit = null
 var occupied: Dictionary = {} # Vector2i -> Unit
 
-var input_locked: bool = false
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -29,7 +28,6 @@ func _ready() -> void:
 	# Selection -> HUD
 	selected_unit_changed.connect(func(u: Unit) -> void:
 		if unit_hud != null:
-			# Your HUD script can implement either bind() or show_unit().
 			if unit_hud.has_method("bind"):
 				unit_hud.call("bind", u)
 			elif unit_hud.has_method("show_unit"):
@@ -45,13 +43,11 @@ func _ready() -> void:
 			u.reset_ap()
 			occupied[c] = u
 
-	turn_manager.input_locked_changed.connect(func(locked: bool) -> void:
-		input_locked = locked
-	)
-
 	turn_manager.team_turn_started.connect(func(team_id: int) -> void:
-		if selected_unit != null and selected_unit.team_id != team_id:
+		# If selection is invalid for this team, auto-pick a default
+		if selected_unit == null or selected_unit.team_id != team_id or not selected_unit.is_alive():
 			clear_selection()
+			_auto_select_default_unit_for_active_team()
 	)
 
 	turn_manager.match_won.connect(func(winning_team_id: int) -> void:
@@ -62,8 +58,8 @@ func _ready() -> void:
 	action_resolver.setup(turn_manager, grid, units_node, occupied, rng)
 	turn_manager.start_match(units_node)
 
-	# Start with no selection (HUD hidden/empty depending on your HUD script)
-	selected_unit_changed.emit(null)
+	# Pick a default selection once match is started/active team is known.
+	call_deferred("_auto_select_default_unit_for_active_team")
 
 # Use _input (not _unhandled_input) so world clicks still work even if UI exists.
 # Prevent click-through: if mouse is over ANY Control, ignore world input.
@@ -97,6 +93,7 @@ func _input(event: InputEvent) -> void:
 			# Can't select enemy units on other team’s turn
 			if clicked_unit.team_id != turn_manager.active_team_id:
 				clear_selection()
+				_auto_select_default_unit_for_active_team()
 				return
 
 			select_unit(clicked_unit)
@@ -107,7 +104,9 @@ func _input(event: InputEvent) -> void:
 			await try_move_selected(clicked_cell)
 			return
 
+		# If you want clicks on empty space to keep current selection, comment this out:
 		clear_selection()
+		_auto_select_default_unit_for_active_team()
 
 func _get_unit_hit(world_pos: Vector2) -> Unit:
 	var tile_size: Vector2 = Vector2(grid.ground_layer.tile_set.tile_size)
@@ -158,6 +157,7 @@ func _update_overlay_for_selected() -> void:
 
 	if selected_unit.team_id != turn_manager.active_team_id:
 		clear_selection()
+		_auto_select_default_unit_for_active_team()
 		return
 
 	var reachable: Array[Vector2i] = grid.get_reachable_cells(selected_unit.cell, selected_unit.ap)
@@ -188,6 +188,7 @@ func try_attack_selected(target: Unit) -> void:
 
 	if selected_unit != null and not selected_unit.is_alive():
 		clear_selection()
+		_auto_select_default_unit_for_active_team()
 
 	if ok:
 		_update_overlay_for_selected()
@@ -199,3 +200,26 @@ func _set_ui_mouse_filter_recursive(n: Node, filter: int) -> void:
 		(n as Control).mouse_filter = filter
 	for c in n.get_children():
 		_set_ui_mouse_filter_recursive(c, filter)
+
+# Default selection: choose lowest class_id on the active team.
+func _auto_select_default_unit_for_active_team() -> void:
+	var best: Unit = null
+	var best_id := 999999
+
+	for child in units_node.get_children():
+		if child is Unit:
+			var u := child as Unit
+			if not u.is_alive():
+				continue
+			if u.team_id != turn_manager.active_team_id:
+				continue
+			if u.class_stats == null:
+				continue
+
+			var cid: int = u.class_stats.class_id
+			if best == null or cid < best_id:
+				best = u
+				best_id = cid
+
+	if best != null:
+		select_unit(best)

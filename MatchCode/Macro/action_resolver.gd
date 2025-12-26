@@ -1,4 +1,3 @@
-# Actio
 extends Node
 class_name ActionResolver
 
@@ -72,7 +71,15 @@ func do_move(unit: Unit, target_cell: Vector2i) -> bool:
 	action_started.emit("move")
 
 	occupied.erase(unit.cell)
-	unit.ap -= cost
+
+	# Spend AP with signal emission (fixes HUD updates)
+	if not _spend_ap(unit, cost):
+		# Restore occupied entry if spend fails (shouldn't happen due to checks)
+		occupied[unit.cell] = unit
+		action_finished.emit("move")
+		turn_manager.on_action_finished()
+		return false
+
 	occupied[target_cell] = unit
 
 	unit.move_to_cell(target_cell, grid, Callable())
@@ -123,7 +130,11 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 	turn_manager.on_action_started()
 	action_started.emit("attack")
 
-	attacker.ap -= ap_cost
+	# Spend AP with signal emission (fixes HUD updates)
+	if not _spend_ap(attacker, ap_cost):
+		action_finished.emit("attack")
+		turn_manager.on_action_finished()
+		return false
 
 	# Attacker determines the impact effect via context override.
 	var ctx: Dictionary = {
@@ -158,10 +169,8 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 
 	var raw_damage: int = int(round(attacker.class_stats.base_damage * dmg_mult))
 
-
 	var armor: int = defender.class_stats.armor
 	var final_damage: int = max(0, raw_damage - armor)
-
 
 	defender.take_damage(final_damage)
 
@@ -171,7 +180,6 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 		" Attacker AP:", attacker.ap)
 
 	defender.play_impact_fx_from_attacker(attacker, ctx)
-
 
 	if not defender.is_alive():
 		print(defender.name, "DOWNED")
@@ -183,4 +191,33 @@ func do_attack(attacker: Unit, defender: Unit) -> bool:
 
 	action_finished.emit("attack")
 	turn_manager.on_action_finished()
+	return true
+
+# -------------------------
+# AP helper
+# -------------------------
+func _spend_ap(u: Unit, cost: int) -> bool:
+	if u == null:
+		return false
+	if cost <= 0:
+		return true
+	if u.ap < cost:
+		return false
+
+	# Preferred: use Unit API if you added it
+	if u.has_method("spend_ap"):
+		return u.call("spend_ap", cost)
+
+	# Next best: set_ap API
+	if u.has_method("set_ap"):
+		u.call("set_ap", u.ap - cost)
+		return true
+
+	# Fallback: direct mutate + emit signal if available
+	var old := u.ap
+	u.ap = max(u.ap - cost, 0)
+
+	if u.has_signal("ap_changed"):
+		u.emit_signal("ap_changed", u, u.ap, old)
+
 	return true
